@@ -18,6 +18,7 @@ class CreateMenuItemsTable extends Migration
             $table->string('name');
             $table->decimal('price');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

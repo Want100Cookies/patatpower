@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Forms\MenuItemForm;
 use App\MenuItem;
+use Bouncer;
 use Illuminate\Http\Request;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
 
@@ -14,11 +15,17 @@ class MenuItemController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param Request $request
+     *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $menu = MenuItem::all();
+        if ($request->has('trashed')) {
+            $menu = MenuItem::onlyTrashed()->get();
+        } else {
+            $menu = MenuItem::all();
+        }
 
         return view('menu.index', compact('menu'));
     }
@@ -30,12 +37,15 @@ class MenuItemController extends Controller
      */
     public function create()
     {
+        Bouncer::can('edit', MenuItem::class);
+
+        $title = 'Create menu item';
         $form = $this->form(MenuItemForm::class, [
             'method' => 'POST',
             'url' => route('menu-items.store')
         ]);
 
-        return view('menu.create', compact('form'));
+        return view('menu.form', compact('title', 'form'));
     }
 
     /**
@@ -45,6 +55,8 @@ class MenuItemController extends Controller
      */
     public function store()
     {
+        Bouncer::can('edit', MenuItem::class);
+
         $form = $this->form(MenuItemForm::class);
         $form->redirectIfNotValid();
 
@@ -61,7 +73,7 @@ class MenuItemController extends Controller
      */
     public function show(MenuItem $menuItem)
     {
-        //
+        return view('menu.show', compact('menuItem'));
     }
 
     /**
@@ -72,29 +84,62 @@ class MenuItemController extends Controller
      */
     public function edit(MenuItem $menuItem)
     {
-        //
+        Bouncer::can('edit', MenuItem::class);
+
+        $title = "Edit $menuItem->name";
+        $form = $this->form(MenuItemForm::class, [
+            'method' => 'PUT',
+            'url' => route('menu-items.update', $menuItem->id),
+            'model' => $menuItem
+        ]);
+
+        return view('menu.form', compact('title', 'form'));
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\MenuItem  $menuItem
+     * @param  \App\MenuItem $menuItem
+     *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, MenuItem $menuItem)
+    public function update(MenuItem $menuItem)
     {
-        //
+        Bouncer::can('edit', MenuItem::class);
+
+        $form = $this->form(MenuItemForm::class, [], [
+            'id' => $menuItem->id
+        ]);
+        $form->redirectIfNotValid();
+
+        $menuItem->update($form->getFieldValues());
+
+        return redirect()->route('menu-items.show', $menuItem->id);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\MenuItem  $menuItem
+     * @param  \App\MenuItem $menuItem
+     *
      * @return \Illuminate\Http\Response
+     * @throws \Exception
      */
-    public function destroy(MenuItem $menuItem)
+    public function destroy($id)
     {
-        //
+        Bouncer::can('edit', MenuItem::class);
+
+        $menuItem = MenuItem::withTrashed()
+            ->findOrFail($id);
+
+        if ($menuItem->trashed()) {
+            $menuItem->restore();
+        } else {
+            $menuItem->delete();
+        }
+
+        $menuItem->save();
+
+        return redirect()->route('menu-items.index');
     }
 }

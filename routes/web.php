@@ -20,6 +20,6 @@ Auth::routes();
 Route::middleware('auth')->group(function () {
     Route::get('/home', 'HomeController@index')->name('home');
 
-    Route::resource('menu-items', 'MenuItemController')->parameters(['menu-items' => 'MenuItem']);
+    Route::resource('menu-items', 'MenuItemController')->parameters(['menu-items' => 'menuItem']);
 });
 
