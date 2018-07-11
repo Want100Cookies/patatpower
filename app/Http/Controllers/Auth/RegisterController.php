@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\PatatRun;
 use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
+use Bouncer;
 
 class RegisterController extends Controller
 {
@@ -73,6 +75,8 @@ class RegisterController extends Controller
         {
             $user->assign('admin');
         }
+
+        Bouncer::allow($user)->toOwn(PatatRun::class);
 
         return $user;
     }

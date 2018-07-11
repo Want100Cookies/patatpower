@@ -4,7 +4,7 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-6">
-            <div class="card">
+            <div class="card mb-3">
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
@@ -18,8 +18,31 @@
                 </div>
             </div>
         </div>
+
         <div class="col-md-6">
-            <div class="card">
+            <div class="card mb-3">
+                <div class="card-header">Active patat runs</div>
+
+                <div class="card-body">
+                    <ul class="list-group">
+                        @forelse($activePatatRuns as $patatRun)
+                            <li class="list-group-item">
+                                {{ $patatRun->owner->name }} | {{ $patatRun->deadline }}
+                            </li>
+                        @empty
+                            <li class="list-group-item">
+                                No patat runs are active
+                            </li>
+                        @endforelse
+                    </ul>
+
+                    <a href="{{ route('patat-runs.index') }}" class="btn btn-primary mt-3">View all</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card mn-3">
                 <div class="card-header">Menu</div>
 
                 <div class="card-body">

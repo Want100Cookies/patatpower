@@ -45,7 +45,7 @@ class MenuItemController extends Controller
             'url' => route('menu-items.store')
         ]);
 
-        return view('menu.form', compact('title', 'form'));
+        return view('layouts.form', compact('title', 'form'));
     }
 
     /**
@@ -93,7 +93,7 @@ class MenuItemController extends Controller
             'model' => $menuItem
         ]);
 
-        return view('menu.form', compact('title', 'form'));
+        return view('layouts.form', compact('title', 'form'));
     }
 
     /**

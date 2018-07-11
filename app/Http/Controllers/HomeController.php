@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\MenuItem;
+use App\PatatRun;
 
 class HomeController extends Controller
 {
@@ -14,6 +15,7 @@ class HomeController extends Controller
     public function index()
     {
         $menu = MenuItem::take(5)->get();
-        return view('home', compact('menu'));
+        $activePatatRuns = PatatRun::active()->get();
+        return view('home', compact('menu', 'activePatatRuns'));
     }
 }
