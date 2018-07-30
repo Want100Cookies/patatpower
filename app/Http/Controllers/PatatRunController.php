@@ -6,6 +6,8 @@ use App\Forms\PatatRunForm;
 use App\PatatRun;
 use Illuminate\Http\Request;
 use Kris\LaravelFormBuilder\FormBuilderTrait;
+use Carbon\Carbon;
+use Bouncer;
 
 class PatatRunController extends Controller
 {
@@ -31,6 +33,8 @@ class PatatRunController extends Controller
      */
     public function create()
     {
+        Bouncer::can('create', PatatRun::class);
+
         $title = 'Create new patat run';
         $form = $this->form(PatatRunForm::class, [
             'method' => 'POST',
@@ -48,12 +52,16 @@ class PatatRunController extends Controller
      */
     public function store(Request $request)
     {
+        Bouncer::can('create', PatatRun::class);
+
         $form = $this->form(PatatRunForm::class);
         $form->redirectIfNotValid();
 
-        $patatRun = PatatRun::create(
-            ['owner_id' => $request->user()->id] + $form->getFieldValues()
-        );
+        $deadline = Carbon::createFromFormat('Y-m-d H:i', $form->getFieldValues()['deadline']);
+        $owner_id = $request->user()->id;
+
+
+        $patatRun = PatatRun::create(compact('deadline', 'owner_id'));
 
         return redirect()->route('patat-runs.show', $patatRun->id);
     }
@@ -66,7 +74,7 @@ class PatatRunController extends Controller
      */
     public function show(PatatRun $patatRun)
     {
-        //
+        return view('patat-runs.show', compact('patatRun'));
     }
 
     /**
@@ -77,7 +85,16 @@ class PatatRunController extends Controller
      */
     public function edit(PatatRun $patatRun)
     {
-        //
+        Bouncer::can('edit', $patatRun);
+
+        $title = "Edit patat run";
+        $form = $this->form(PatatRunForm::class, [
+            'method' => 'PUT',
+            'url' => route('patat-runs.update', $patatRun->id),
+            'model' => $patatRun
+        ]);
+
+        return view('layouts.form', compact('title', 'form'));
     }
 
     /**
@@ -89,7 +106,16 @@ class PatatRunController extends Controller
      */
     public function update(Request $request, PatatRun $patatRun)
     {
-        //
+        Bouncer::can('edit', $patatRun);
+
+        $form = $this->form(PatatRunForm::class, [], [
+            'id' => $patatRun->id
+        ]);
+        $form->redirectIfNotValid();
+
+        $patatRun->update($form->getFieldValues());
+
+        return redirect()->route('patat-runs.show', $patatRun->id);
     }
 
     /**
